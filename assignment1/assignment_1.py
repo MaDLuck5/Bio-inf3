@@ -3,17 +3,21 @@
 Assignment 1
 """
 # imports
+import os
 import argparse
 from Bio import Seq, SeqIO, AlignIO
+from Bio.Seq import Seq
 import sys
-from Bio.Align.Applications import ClustalOmegaCommandline
+from Bio.Align.Applications import ClustalwCommandline
 
 
-def alignment_score(msa_alignment, nuc_seq):
+def alignment_score(msa_alignment, nuc_fasta, location, change):
     scoring = list()
     msa = AlignIO.read(msa_alignment, "fasta")
 
     print(msa)
+
+    mutated_aa_seq = nuc_translator_to_aa(single_point_mutator(nuc_fasta, location, change))
 
     for i in range(msa.get_alignment_length()):
         temporary_dict = {}
@@ -27,16 +31,22 @@ def alignment_score(msa_alignment, nuc_seq):
     return alignment
 
 
-def alignment(in_file, out_file):
+def alignment(in_file, out_file_dir, num):
     """
 
+    :param num:
+    :param out_file_dir:
     :param in_file:
-    :param out_file:
     :return:
     """
-    clustalomega = ClustalOmegaCommandline(infile=in_file, outfile=out_file, verbose=True, auto=False,
-                                           align=True, output="FASTA")
-    clustalomega()
+
+    out_file = out_file_dir + f"\\MSA{num}.fasta"
+    clustalw_exe = r"C:\Program Files (x86)\ClustalW2\clustalw2.exe"
+    clustalw_cline = ClustalwCommandline(clustalw_exe, infile=in_file, outfile=out_file,
+                                         align=True, output="fasta")
+    clustalw_cline()
+
+    return out_file
 
 
 def nuc_translator_to_aa(nuc_seq):
@@ -45,10 +55,18 @@ def nuc_translator_to_aa(nuc_seq):
     :param nuc_seq:
     :return:
     """
-    aa_seq = SeqIO.read(nuc_seq, "fasta")
-    protein_seq = Seq.translate(aa_seq)
+
+    protein_seq = Seq.translate(nuc_seq)
 
     return protein_seq
+
+
+def single_point_mutator(nuc_fasta, point, mutation):
+    nuc_sequence = SeqIO.read(nuc_fasta, "fasta")
+    temp_nuc_seq = list(str(nuc_sequence.seq))
+    temp_nuc_seq[(point - 1)] = mutation
+    mutated_aa_seq = Seq("".join(temp_nuc_seq))
+    return mutated_aa_seq
 
 
 def command_line_parsing():
@@ -75,7 +93,11 @@ def command_line_parsing():
 
 def main():
     args = command_line_parsing()
-    print(args.location)
+    working_dir = os.getcwd()
+    output_file_dir = working_dir + '\\output'
+
+    msa_01 = alignment(args.file, output_file_dir, 1)
+    alignment_score(msa_01, args.sequence, args.location, args.replacement)
 
     return 0
 

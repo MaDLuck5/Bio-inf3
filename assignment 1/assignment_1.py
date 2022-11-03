@@ -4,41 +4,82 @@ Assignment 1
 """
 # imports
 import argparse
-import Bio
+from Bio import Seq, SeqIO, AlignIO
 import sys
+from Bio.Align.Applications import ClustalOmegaCommandline
 
 
+def alignment_score(msa_alignment, nuc_seq):
+    scoring = list()
+    msa = AlignIO.read(msa_alignment, "fasta")
 
-def main(args):
+    print(msa)
+
+    for i in range(msa.get_alignment_length()):
+        temporary_dict = {}
+
+        unique_aa = set(msa[:, i])
+        for amino_acid in unique_aa:
+            temporary_dict[amino_acid] = alignment[:, i].count(amino_acid) / len(alignment[:, i])
+        temporary_dict = {x: a for x, a in sorted(temporary_dict.items(), key=lambda item: item[1], reverse=True)}
+        scoring.append(temporary_dict)
+
+    return alignment
+
+
+def alignment(in_file, out_file):
+    """
+
+    :param in_file:
+    :param out_file:
+    :return:
+    """
+    clustalomega = ClustalOmegaCommandline(infile=in_file, outfile=out_file, verbose=True, auto=False,
+                                           align=True, output="FASTA")
+    clustalomega()
+
+
+def nuc_translator_to_aa(nuc_seq):
+    """
+
+    :param nuc_seq:
+    :return:
+    """
+    aa_seq = SeqIO.read(nuc_seq, "fasta")
+    protein_seq = Seq.translate(aa_seq)
+
+    return protein_seq
+
+
+def command_line_parsing():
     parser = argparse.ArgumentParser(description="Calculate the severity scores for SNPs"
                                                  "in a MSA.")
 
-    parser.add_argument("file", metavar="F", type=str,
-                        help="The file path to the Multiple sequence alignment, only multi Fasta files  ")
+    parser.add_argument("-s", "--sequence", type=str,
+                        help="the path to the coding Amino acid sequence fasta file, Please "
+                             "specify the path in this format'<path>' ")
 
-    parser.add_argument("-l", metavar="location", type=str,
+    parser.add_argument("-f", "--file", type=str,
+                        help="The file path to the Multiple sequence alignment, only multi Fasta files. Please "
+                             "specify the path in '<path>'")
+
+    parser.add_argument("-l", "--location", type=int,
                         help="A single location for the SNP to calculate the severity")
 
-
-    parser.add_argument("-s", metavar="save", type=str, choices=["amino", "alignment", "all"],
-                        help="What the program wil save and write to the destination denoted "
-                             "by -out, you can choose from the following options:"
-                             "amino; only saves the amino translation,"
-                             "alignment; only saves the alignment information,"
-                             "all; saves amino & alignment information."
-                             "If no option was given, will not save data and continue to only "
-                             "calculate the single SNP location.")
-
-    parser.add_argument("-out", metavar="output", type=str,
-                        help="The path and filename for saving the desired information, "
-                             "make sure to denote it as an .csv file.")
+    parser.add_argument("-r", "--replacement", type=str,
+                        help="the Amino acid that replaces the on the location given")
 
     args = parser.parse_args()
+    return args
+
+
+def main():
+    args = command_line_parsing()
+    print(args.location)
+
     return 0
 
 
 if __name__ == "__main__":
-    main(sys.argv)
+    main()
     sys.exit()
-
-

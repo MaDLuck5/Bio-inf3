@@ -187,7 +187,7 @@ def command_line_parsing():
     parser.add_argument("-r", "--replacement", type=str,
                         help="the Amino acid that replaces the on the location given")
 
-    parser.add_argument("-p", "--percentage_disp", type=bool,
+    parser.add_argument("-p", "--percentage_disp", type=bool, default=False,
                         help="if TRUE is given, programs shows the conservation of each amino acid in the MSA in "
                              "percentages")
 
@@ -203,8 +203,6 @@ def main():
     fasta_list = []
 
     args = command_line_parsing()
-    if args.percentage_disp is None:
-        args.percentage_disp = False
     working_dir = os.getcwd()
     output_file_dir = working_dir + '\\output'
 

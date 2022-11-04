@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 
 """
-Script for calculation the severity of a user induced SNP
+Script for calculation the severity of a user induced SNP,
+ it does report on the amount of gaps but not the severity of them.
+
 """
 
 # METADATA
@@ -99,10 +101,9 @@ def generate_cost(mutated_aa_seq, scoring):
             print(f"amount of gaps in the alignment{gaps}")
 
 
-
 def alignment(in_file, out_file_dir, num, clustalw_exe):
     """
-    Performs alignment of a multifasta amino acid file, creates a output file with a given indexing number.
+    Performs alignment of a multifasta amino acid file, creates an output file with a given indexing number.
     :param clustalw_exe:
     :param num: indexing number for output file
     :param out_file_dir:
@@ -133,7 +134,7 @@ def nuc_translator_to_aa(nuc_seq):
 
 def single_point_mutator(sequence, point, mutation):
     """
-    Takes a Biopython Seq object and inserts a SNP mutation at the specified location
+    Takes a Biopython Seq object and inserts an SNP mutation at the specified location
     :param sequence: Biopython Seq object
     :param point: point in the sequence for the mutation
     :param mutation: the mutation wanted

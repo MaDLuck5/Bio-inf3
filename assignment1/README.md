@@ -7,7 +7,11 @@ Name
 Smoking gun, an assigment to determine if an SNP in a gen sequence is deleterious or not.  
   
   
-Description  
+Description
+assignment1.py a script to calculate the severity of a SNP introduced by the user with the given starting argument.
+it first calculates the conservation of the given sequences in the MSA and then calculates a cost difference in the mutated sequence.
+if the user wants it can make a new alignment with the mutated sequence.
+
   
   
 Installation   

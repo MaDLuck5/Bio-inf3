@@ -58,8 +58,8 @@ def generate_cost(mutated_aa_seq, scoring):
 
         position_cost.append(cost - pre_cost)
 
-    for i, e in enumerate(position_cost):
-        print("Position {} has a cost of {}".format(i, e))
+    #for i, e in enumerate(position_cost):
+        # print("Position {} has a cost of {}".format(i, e))
     print("The total cost for the mutated sequence is: {}".format(cost))
 
 
@@ -93,29 +93,36 @@ def nuc_translator_to_aa(nuc_seq):
     return protein_seq
 
 
-def single_point_mutator(nuc_fasta, point, mutation):
+def single_point_mutator(sequence, point, mutation):
     """
     Takes a Biopython Seq object and inserts a SNP mutation at the specified location
-    :param nuc_fasta: Biopython Seq object
+    :param sequence: Biopython Seq object
     :param point: point in the sequence for the mutation
     :param mutation: the mutation wanted
     :return:mutated_aa_seq: Biopython Seq object
     """
-    temp_nuc_seq = list(str(seq_reader(nuc_fasta)))
+    temp_nuc_seq = list(str(sequence))
     temp_nuc_seq[(point - 1)] = mutation
     mutated_aa_seq = Seq("".join(temp_nuc_seq))
     return mutated_aa_seq
 
 
-def seq_reader(path_to_file):
+def start_annotation_stripper(sequence):
+    temp_nuc_seq = list(str(sequence))
+    temp_nuc_seq = Seq("".join(temp_nuc_seq))
+    de_annotated_seq = temp_nuc_seq.replace("*", "")
+    return de_annotated_seq
+
+
+def fasta_reader(path_to_file):
     """
     sequence reader, reads a single fasta styled sequence and returns a Biopython Seq object
     :param path_to_file:
     :return: sequence: a  Biopython Seq object
     """
     fasta_object = SeqIO.read(path_to_file, "fasta")
-    sequence = fasta_object.seq
-    return sequence
+
+    return fasta_object
 
 
 def command_line_parsing():
@@ -144,23 +151,69 @@ def command_line_parsing():
     return args
 
 
+def fasta_altere(fasta_object, point, mutation):
+    sequence = fasta_object.seq
+    fasta_object.seq = single_point_mutator(sequence, point, mutation)
+    return fasta_object
+
+
+def fasta_writer(fasta_list, output_dir):
+    """
+
+    :param fasta_list:
+    :param output_dir:
+    :return:
+    """
+    new_file_path = f'{output_dir}\\new_multi.fasta'
+    SeqIO.write(fasta_list, new_file_path, "fasta")
+
+    return new_file_path
+
+
+def multi_fasta_parser(fasta_path):
+    """
+
+    :param fasta_path:
+    :return:
+    """
+    temp_list = []
+    fasta_sequences = SeqIO.parse(open(fasta_path), 'fasta')
+    for item in fasta_sequences:
+        temp_list.append(item)
+
+    return temp_list
+
+
 def main():
     """
     Main function
     :return:
     """
+    fasta_list = []
+
     args = command_line_parsing()
     working_dir = os.getcwd()
     output_file_dir = working_dir + '\\output'
 
-    msa_01 = alignment(args.file, output_file_dir, 1)
+    # normal_fasta = fasta_reader(args.sequence)
+    # normal_fasta.seq = nuc_translator_to_aa(normal_fasta.seq)
+    # normal_fasta.seq = start_annotation_stripper(normal_fasta.seq)
+    mutated_fasta = fasta_altere(fasta_reader(args.sequence), args.location, args.replacement)
+    mutated_fasta.seq = nuc_translator_to_aa(mutated_fasta.seq)
+    #mutated_fasta.seq = start_annotation_stripper(mutated_fasta.seq)
 
-    aa_seq = nuc_translator_to_aa(seq_reader(args.sequence))
-    mutated_aa_seq = nuc_translator_to_aa(single_point_mutator(args.sequence, args.location, args.replacement))
+    # fasta_list.append(normal_fasta)
+    fasta_list.append(mutated_fasta)
+    fasta_list.extend(multi_fasta_parser(args.file))
+
+    new_multifasta_path = fasta_writer(fasta_list, output_file_dir)
+    msa_01 = alignment(new_multifasta_path, output_file_dir, 1)
+    msa_02 = alignment(args.file, output_file_dir, 2)
 
     scoring = alignment_score(msa_01)
-
-    generate_cost(aa_seq, scoring)
+    scoring2 = alignment_score(msa_02)
+    generate_cost(mutated_fasta.seq, scoring)
+    generate_cost(mutated_fasta.seq, scoring2)
 
     return 0
 

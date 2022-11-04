@@ -93,12 +93,11 @@ def generate_cost(mutated_aa_seq, scoring):
     print(f"length of given mutated Sequence ={len(mutated_aa_seq)}")
     print(f"The total cost for the mutated sequence is: {round(cost, ndigits=2)}")
     if cost >= 0.8:
-
         print(f"cost more than 80% conservation, a Amino acid has been changed in a highly conserved place")
-        for key in change_dict:
-            print(f"the new Amino Acid: {key}")
-            print(f"The changed Amino Acid and conservation in % :{change_dict[key]}")
-            print(f"amount of gaps in the alignment{gaps}")
+    for key in change_dict:
+        print(f"the new Amino Acid: {key}")
+        print(f"The changed Amino Acid and conservation in % :{change_dict[key]}")
+    print(f"amount of gaps in the alignment: {gaps}")
 
 
 def alignment(in_file, out_file_dir, num, clustalw_exe):
@@ -179,7 +178,7 @@ def fasta_writer(fasta_list, output_dir):
     """
     new_file_path = f'{output_dir}\\new_multi.fasta'
     SeqIO.write(fasta_list, new_file_path, "fasta")
-
+    print("new multifasta created")
     return new_file_path
 
 
@@ -257,7 +256,7 @@ def main():
         fasta_list.append(mutated_fasta)
         fasta_list.extend(multi_fasta_parser(args.file))
         fasta_writer(fasta_list, output_file_dir)
-        alignment(args.file, output_file_dir, " new+snp", args.clustalwlocation)
+        alignment(args.file, output_file_dir, "new+snp", args.clustalwlocation)
 
     # runnning MSA
     msa_01 = alignment(args.file, output_file_dir, 1, args.clustalwlocation)

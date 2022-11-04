@@ -67,7 +67,7 @@ def generate_cost(mutated_aa_seq, scoring):
     # print("Position {} has a cost of {}".format(i, e))
     print(f"lengthe of given mutated Sequence ={len(mutated_aa_seq)}")
     print(f"The total cost for the mutated sequence is: {round(cost)}")
-    print(f"{round((cost/len(mutated_aa_seq))*100)}% conservation compared to the Homology MSA file given")
+    #print(f"{round((cost / len(mutated_aa_seq)) * 100)}% conservation compared to the Homology MSA file given")
 
 
 def alignment(in_file, out_file_dir, num):
@@ -114,13 +114,6 @@ def single_point_mutator(sequence, point, mutation):
     return mutated_aa_seq
 
 
-def start_annotation_stripper(sequence):
-    temp_nuc_seq = list(str(sequence))
-    temp_nuc_seq = Seq("".join(temp_nuc_seq))
-    de_annotated_seq = temp_nuc_seq.replace("*", "")
-    return de_annotated_seq
-
-
 def fasta_reader(path_to_file):
     """
     sequence reader, reads a single fasta styled sequence and returns a Biopython Seq object
@@ -130,7 +123,6 @@ def fasta_reader(path_to_file):
     fasta_object = SeqIO.read(path_to_file, "fasta")
 
     return fasta_object
-
 
 
 def fasta_altere(fasta_object, point, mutation):
@@ -164,6 +156,7 @@ def multi_fasta_parser(fasta_path):
         temp_list.append(item)
 
     return temp_list
+
 
 def command_line_parsing():
     """
@@ -206,12 +199,11 @@ def main():
     working_dir = os.getcwd()
     output_file_dir = working_dir + '\\output'
 
-    # normal_fasta = fasta_reader(args.sequence)
-    # normal_fasta.seq = nuc_translator_to_aa(normal_fasta.seq)
-    # normal_fasta.seq = start_annotation_stripper(normal_fasta.seq)
+    normal_fasta = fasta_reader(args.sequence)
+    normal_fasta.seq = nuc_translator_to_aa(normal_fasta.seq)
+    normal_fasta.seq = start_annotation_stripper(normal_fasta.seq)
     mutated_fasta = fasta_altere(fasta_reader(args.sequence), args.location, args.replacement)
     mutated_fasta.seq = nuc_translator_to_aa(mutated_fasta.seq)
-    # mutated_fasta.seq = start_annotation_stripper(mutated_fasta.seq)
 
     # fasta_list.append(normal_fasta)
     fasta_list.append(mutated_fasta)
@@ -221,8 +213,8 @@ def main():
     msa_01 = alignment(new_multifasta_path, output_file_dir, 1)
     msa_02 = alignment(args.file, output_file_dir, 2)
 
-    scoring = alignment_score(msa_01,args.percentage_disp)
-    scoring2 = alignment_score(msa_02,args.percentage_disp)
+    scoring = alignment_score(msa_01, args.percentage_disp)
+    scoring2 = alignment_score(msa_02, args.percentage_disp)
     generate_cost(mutated_fasta.seq, scoring)
     generate_cost(mutated_fasta.seq, scoring2)
 

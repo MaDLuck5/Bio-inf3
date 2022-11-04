@@ -39,14 +39,14 @@ optional arguments:
   
   
 After which, you can run the following example code to get the scrip to run:  
-assignment_1.py -s <path to mRNA sequence> -f <path to protein multifasta> -l <position of SNP> -r <Nuc change to>  
+assignment_1.py -s <path to mRNA sequence> -f <path to protein multifasta> -l <position of SNP> -r <Nuc change to> -cw <path to clustalW.exe> -p -save
   
 EXAMPLE:  
 assignment_1.py -s "C:\Users\matsp\Documents\Bio-Infromatiscs-jaar3\Bio-inf3\assignment1\sequence2.txt" -f "C:\Users\matsp\Documents\Bio-Infromatiscs-jaar3\Bio-inf3\assignment1\homologene2.fasta" -l 32 -r G -p -save  
   
   
 IF this doesn't work, it is always possible to run the script the following way in the terminal:  
- python .\assignment_1.py -s "C:\Users\matsp\Documents\Bio-Infromatiscs-jaar3\Bio-inf3\assignment1\sequence2.txt" -f "C:\Users\matsp\Documents\Bio-Infromatiscs-jaar3\Bio-inf3\assignment1\homologene2.fasta" -l 32 -r G -p -save  
+ python 3 .\assignment_1.py -s "C:\Users\matsp\Documents\Bio-Infromatiscs-jaar3\Bio-inf3\assignment1\sequence2.txt" -f "C:\Users\matsp\Documents\Bio-Infromatiscs-jaar3\Bio-inf3\assignment1\homologene2.fasta" -l 32 -r G -p -save  
   
 If you need help with the script, you can always type the following command to get help for the program:  
 assignment_1.py -h  

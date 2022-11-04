@@ -87,7 +87,7 @@ def generate_cost(mutated_aa_seq, scoring):
             print(f"The changed Amino Acid and conservation in % :{change_dict[key]}")
 
 
-def alignment(in_file, out_file_dir, num):
+def alignment(in_file, out_file_dir, num, clustalw_exe):
     """
     Performs alignment of a multifasta amino acid file, creates a output file with a given indexing number.
     :param num: indexing number for output file
@@ -97,7 +97,7 @@ def alignment(in_file, out_file_dir, num):
     """
 
     out_file = out_file_dir + f"\\MSA{num}.fasta"
-    clustalw_exe = r"C:\Program Files (x86)\ClustalW2\clustalw2.exe"
+
     clustalw_cline = ClustalwCommandline(clustalw_exe, infile=in_file, outfile=out_file,
                                          align=True, output="fasta")
     clustalw_cline()
@@ -192,17 +192,20 @@ def command_line_parsing():
 
     parser.add_argument("-s", "--sequence", type=str,
                         help="the path to the coding Amino acid sequence fasta file, Please "
-                             "specify the path in this format'<path>' ")
+                             "specify the path in this format'<path>' ", required=True)
 
     parser.add_argument("-f", "--file", type=str,
                         help="The file path to the Multiple sequence alignment, only multi Fasta files. Please "
-                             "specify the path in '<path>'")
+                             "specify the path in '<path>'", required=True)
 
     parser.add_argument("-l", "--location", type=int,
-                        help="A single location for the SNP to calculate the severity")
+                        help="A single location for the SNP to calculate the severity", required=True)
 
     parser.add_argument("-r", "--replacement", type=str,
-                        help="the Amino acid that replaces the on the location given")
+                        help="the Amino acid that replaces the on the location given", required=True)
+
+    parser.add_argument("-cw", "--clustalwlocation", type=str, default=r"C:\Program Files (x86)\ClustalW2\clustalw2.exe",
+                        help="The path to the installed Clustal W2 program .exe")
 
     parser.add_argument("-p", "--percentage_disp", type=bool, default=False,
                         help="if TRUE is given, programs shows the conservation of each amino acid in the MSA in "
@@ -233,10 +236,10 @@ def main():
 
         fasta_list.append(mutated_fasta)
         fasta_list.extend(multi_fasta_parser(args.file))
-        new_multifasta_path = fasta_writer(fasta_list, output_file_dir)
-        alignment(args.file, output_file_dir, " new+snp")
+        fasta_writer(fasta_list, output_file_dir)
+        alignment(args.file, output_file_dir, " new+snp", args.clustalwlocation)
 
-    msa_02 = alignment(args.file, output_file_dir, 2)
+    msa_02 = alignment(args.file, output_file_dir, 2, args.clustalwlocation)
 
     scoring2 = alignment_score(msa_02, args.percentage_disp)
 

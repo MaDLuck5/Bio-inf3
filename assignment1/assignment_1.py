@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
+
 """
-Assignment 1
+Script for calculation the severity of a user induced SNP
 """
+
+# METADATA
+
+__author__ = "Mats Slik"
+__version__ = 1.3
+
 # imports
 import os
 import argparse
@@ -9,14 +16,14 @@ from Bio import Seq, SeqIO, AlignIO
 from Bio.Seq import Seq
 import sys
 from Bio.Align.Applications import ClustalwCommandline
-from typing import List
 
 
-def alignment_score(msa_alignment, flag=False):
+def alignment_conservation_calc(msa_alignment, flag=False):
     """
-
-    :param flag:
-    :param msa_alignment:
+    for each position in the given alignment calculates the percentages of amino acids found,
+    and thus returns the conservation of said amino acids
+    :param flag: True or False, if True prints the conservation in %
+    :param msa_alignment: msa alignment in fasta format
     :return:
     """
     scoring = list()
@@ -32,7 +39,7 @@ def alignment_score(msa_alignment, flag=False):
 
             percentage = msa[:, i].count(amino_acid) / len(msa[:, i])
             if flag:
-                print(f"position:{i} amino acid:{amino_acid} is conserveted in {int(percentage * 100)}%")
+                print(f"position:{i} amino acid:{amino_acid} is conserved in {int(percentage * 100)}%")
             temporary_dict[amino_acid] = percentage
         temporary_dict = {x: a for x, a in sorted(temporary_dict.items(), key=lambda item: item[1], reverse=True)}
         scoring.append(temporary_dict)
@@ -42,10 +49,12 @@ def alignment_score(msa_alignment, flag=False):
 
 def generate_cost(mutated_aa_seq, scoring):
     """
-
-    :param mutated_aa_seq:
-    :param scoring:
-    :return:
+    calculates the cost for the change in the amino Acid sequence, takes a dictionary calculated
+    alignment_conservation_calc where for each position the conservation is calculated and given
+    :param: mutated_aa_seq: Amino acid sequence with the introduced snp
+    :param: scoring: a dict containing conservation score
+    per position
+    :return: nothing, but prints the calculated rsults
     """
     counter = 0
     cost = 0
@@ -62,10 +71,10 @@ def generate_cost(mutated_aa_seq, scoring):
             if len(d) > 1:
                 for key in keys:
                     if aa not in change_dict:
-                        change_dict[aa] = [key, round(d[key]*100, ndigits=2)]
+                        change_dict[aa] = [key, round(d[key] * 100, ndigits=2)]
                     else:
                         change_dict[aa].append(key)
-                        change_dict[aa].append(round(d[key]*100, ndigits=2))
+                        change_dict[aa].append(round(d[key] * 100, ndigits=2))
                     if aa == key:
                         cost -= d[key]
             else:
@@ -76,12 +85,10 @@ def generate_cost(mutated_aa_seq, scoring):
 
         position_cost.append(cost - pre_cost)
 
-    # for i, e in enumerate(position_cost):
-    # print("Position {} has a cost of {}".format(i, e))
-    print(f"lengthe of given mutated Sequence ={len(mutated_aa_seq)}")
+    print(f"length of given mutated Sequence ={len(mutated_aa_seq)}")
     print(f"The total cost for the mutated sequence is: {round(cost, ndigits=2)}")
     if cost >= 0.8:
-        print(f"cost more than 1 a Amino acid has been changed in a highly conserved place")
+        print(f"cost more than 80% conservation, a Amino acid has been changed in a highly conserved place")
         for key in change_dict:
             print(f"the new Amino Acid: {key}")
             print(f"The changed Amino Acid and conservation in % :{change_dict[key]}")
@@ -90,6 +97,7 @@ def generate_cost(mutated_aa_seq, scoring):
 def alignment(in_file, out_file_dir, num, clustalw_exe):
     """
     Performs alignment of a multifasta amino acid file, creates a output file with a given indexing number.
+    :param clustalw_exe:
     :param num: indexing number for output file
     :param out_file_dir:
     :param in_file: path to input multi fast file
@@ -185,7 +193,7 @@ def multi_fasta_parser(fasta_path):
 def command_line_parsing():
     """
     command line parser
-    :return:
+    :return: arguments in argparser object
     """
     parser = argparse.ArgumentParser(description="Calculate the severity scores for SNPs"
                                                  "in a MSA.")
@@ -204,7 +212,8 @@ def command_line_parsing():
     parser.add_argument("-r", "--replacement", type=str,
                         help="the Amino acid that replaces the on the location given", required=True)
 
-    parser.add_argument("-cw", "--clustalwlocation", type=str, default=r"C:\Program Files (x86)\ClustalW2\clustalw2.exe",
+    parser.add_argument("-cw", "--clustalwlocation", type=str,
+                        default=r"C:\Program Files (x86)\ClustalW2\clustalw2.exe",
                         help="The path to the installed Clustal W2 program .exe")
 
     parser.add_argument("-p", "--percentage_disp", type=bool, default=False,
@@ -225,24 +234,30 @@ def main():
     """
     fasta_list = []
 
+    # getting arguments
     args = command_line_parsing()
+    # getting working directory for dynamic file outputs
     working_dir = os.getcwd()
     output_file_dir = working_dir + '\\output'
 
+    # creating SNP mutation in given Nucleotide sequence
     mutated_fasta = fasta_altere(fasta_reader(args.sequence), args.location, args.replacement)
+    # translating Nucleotides to Amino acids
     mutated_fasta.seq = nuc_translator_to_aa(mutated_fasta.seq)
 
+    # checking if user wants new MSA
     if args.create_new_msa:
-
         fasta_list.append(mutated_fasta)
         fasta_list.extend(multi_fasta_parser(args.file))
         fasta_writer(fasta_list, output_file_dir)
         alignment(args.file, output_file_dir, " new+snp", args.clustalwlocation)
 
+    # runnning MSA
     msa_02 = alignment(args.file, output_file_dir, 2, args.clustalwlocation)
 
-    scoring2 = alignment_score(msa_02, args.percentage_disp)
-
+    # creating conservation scores
+    scoring2 = alignment_conservation_calc(msa_02, args.percentage_disp)
+    # calculating the cost and possible changes to AA seq
     generate_cost(mutated_fasta.seq, scoring2)
 
     return 0

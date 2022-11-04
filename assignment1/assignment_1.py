@@ -11,23 +11,28 @@ import sys
 from Bio.Align.Applications import ClustalwCommandline
 
 
-def alignment_score(msa_alignment):
+def alignment_score(msa_alignment, flag=False):
     """
 
+    :param flag:
     :param msa_alignment:
     :return:
     """
     scoring = list()
     msa = AlignIO.read(msa_alignment, "fasta")
 
-    print(msa)
+    # print(msa)
 
     for i in range(msa.get_alignment_length()):
         temporary_dict = dict()
 
         unique_aa = set(msa[:, i])
         for amino_acid in unique_aa:
-            temporary_dict[amino_acid] = msa[:, i].count(amino_acid) / len(msa[:, i])
+
+            percentage = msa[:, i].count(amino_acid) / len(msa[:, i])
+            if flag:
+                print(f"position:{i} amino acid:{amino_acid} is conserveted in {int(percentage * 100)}%")
+            temporary_dict[amino_acid] = percentage
         temporary_dict = {x: a for x, a in sorted(temporary_dict.items(), key=lambda item: item[1], reverse=True)}
         scoring.append(temporary_dict)
 
@@ -58,9 +63,11 @@ def generate_cost(mutated_aa_seq, scoring):
 
         position_cost.append(cost - pre_cost)
 
-    #for i, e in enumerate(position_cost):
-        # print("Position {} has a cost of {}".format(i, e))
-    print("The total cost for the mutated sequence is: {}".format(cost))
+    # for i, e in enumerate(position_cost):
+    # print("Position {} has a cost of {}".format(i, e))
+    print(f"lengthe of given mutated Sequence ={len(mutated_aa_seq)}")
+    print(f"The total cost for the mutated sequence is: {round(cost)}")
+    print(f"{round((cost/len(mutated_aa_seq))*100)}% conservation compared to the Homology MSA file given")
 
 
 def alignment(in_file, out_file_dir, num):
@@ -125,31 +132,6 @@ def fasta_reader(path_to_file):
     return fasta_object
 
 
-def command_line_parsing():
-    """
-    command line parser
-    :return:
-    """
-    parser = argparse.ArgumentParser(description="Calculate the severity scores for SNPs"
-                                                 "in a MSA.")
-
-    parser.add_argument("-s", "--sequence", type=str,
-                        help="the path to the coding Amino acid sequence fasta file, Please "
-                             "specify the path in this format'<path>' ")
-
-    parser.add_argument("-f", "--file", type=str,
-                        help="The file path to the Multiple sequence alignment, only multi Fasta files. Please "
-                             "specify the path in '<path>'")
-
-    parser.add_argument("-l", "--location", type=int,
-                        help="A single location for the SNP to calculate the severity")
-
-    parser.add_argument("-r", "--replacement", type=str,
-                        help="the Amino acid that replaces the on the location given")
-
-    args = parser.parse_args()
-    return args
-
 
 def fasta_altere(fasta_object, point, mutation):
     sequence = fasta_object.seq
@@ -183,6 +165,35 @@ def multi_fasta_parser(fasta_path):
 
     return temp_list
 
+def command_line_parsing():
+    """
+    command line parser
+    :return:
+    """
+    parser = argparse.ArgumentParser(description="Calculate the severity scores for SNPs"
+                                                 "in a MSA.")
+
+    parser.add_argument("-s", "--sequence", type=str,
+                        help="the path to the coding Amino acid sequence fasta file, Please "
+                             "specify the path in this format'<path>' ")
+
+    parser.add_argument("-f", "--file", type=str,
+                        help="The file path to the Multiple sequence alignment, only multi Fasta files. Please "
+                             "specify the path in '<path>'")
+
+    parser.add_argument("-l", "--location", type=int,
+                        help="A single location for the SNP to calculate the severity")
+
+    parser.add_argument("-r", "--replacement", type=str,
+                        help="the Amino acid that replaces the on the location given")
+
+    parser.add_argument("-p", "--percentage_disp", type=bool,
+                        help="if TRUE is given, programs shows the conservation of each amino acid in the MSA in "
+                             "percentages")
+
+    args = parser.parse_args()
+    return args
+
 
 def main():
     """
@@ -192,6 +203,8 @@ def main():
     fasta_list = []
 
     args = command_line_parsing()
+    if args.percentage_disp is None:
+        args.percentage_disp = False
     working_dir = os.getcwd()
     output_file_dir = working_dir + '\\output'
 
@@ -200,7 +213,7 @@ def main():
     # normal_fasta.seq = start_annotation_stripper(normal_fasta.seq)
     mutated_fasta = fasta_altere(fasta_reader(args.sequence), args.location, args.replacement)
     mutated_fasta.seq = nuc_translator_to_aa(mutated_fasta.seq)
-    #mutated_fasta.seq = start_annotation_stripper(mutated_fasta.seq)
+    # mutated_fasta.seq = start_annotation_stripper(mutated_fasta.seq)
 
     # fasta_list.append(normal_fasta)
     fasta_list.append(mutated_fasta)
@@ -210,8 +223,8 @@ def main():
     msa_01 = alignment(new_multifasta_path, output_file_dir, 1)
     msa_02 = alignment(args.file, output_file_dir, 2)
 
-    scoring = alignment_score(msa_01)
-    scoring2 = alignment_score(msa_02)
+    scoring = alignment_score(msa_01,args.percentage_disp)
+    scoring2 = alignment_score(msa_02,args.percentage_disp)
     generate_cost(mutated_fasta.seq, scoring)
     generate_cost(mutated_fasta.seq, scoring2)
 

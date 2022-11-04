@@ -56,6 +56,7 @@ def generate_cost(mutated_aa_seq, scoring):
     per position
     :return: nothing, but prints the calculated rsults
     """
+    gaps = 0
     counter = 0
     cost = 0
     position_cost = list()
@@ -67,31 +68,36 @@ def generate_cost(mutated_aa_seq, scoring):
         pre_cost = cost
 
         if aa != keys[0]:
-            cost += d[keys[0]]
-            if len(d) > 1:
-                for key in keys:
-                    if aa not in change_dict:
-                        change_dict[aa] = [key, round(d[key] * 100, ndigits=2)]
-                    else:
-                        change_dict[aa].append(key)
-                        change_dict[aa].append(round(d[key] * 100, ndigits=2))
-                    if aa == key:
-                        cost -= d[key]
-            else:
-                if keys[0] not in change_dict:
-                    change_dict[aa] = [keys[0], d[keys[0]] * 100]
+            if "-" not in keys:
+                cost += d[keys[0]]
+                if len(d) > 1:
+                    for key in keys:
+                        if aa not in change_dict:
+                            change_dict[aa] = [key, round(d[key] * 100, ndigits=2)]
+                        else:
+                            change_dict[aa].append(key)
+                            change_dict[aa].append(round(d[key] * 100, ndigits=2))
+                        if aa == key:
+                            cost -= d[key]
                 else:
-                    change_dict[aa] += [keys[0], d[keys[0]] * 100]
-
+                    if keys[0] not in change_dict:
+                        change_dict[aa] = [keys[0], d[keys[0]] * 100]
+                    else:
+                        change_dict[aa] += [keys[0], d[keys[0]] * 100]
+            else:
+                gaps += 1
         position_cost.append(cost - pre_cost)
 
     print(f"length of given mutated Sequence ={len(mutated_aa_seq)}")
     print(f"The total cost for the mutated sequence is: {round(cost, ndigits=2)}")
     if cost >= 0.8:
+
         print(f"cost more than 80% conservation, a Amino acid has been changed in a highly conserved place")
         for key in change_dict:
             print(f"the new Amino Acid: {key}")
             print(f"The changed Amino Acid and conservation in % :{change_dict[key]}")
+            print(f"amount of gaps in the alignment{gaps}")
+
 
 
 def alignment(in_file, out_file_dir, num, clustalw_exe):
@@ -253,12 +259,12 @@ def main():
         alignment(args.file, output_file_dir, " new+snp", args.clustalwlocation)
 
     # runnning MSA
-    msa_02 = alignment(args.file, output_file_dir, 2, args.clustalwlocation)
+    msa_01 = alignment(args.file, output_file_dir, 1, args.clustalwlocation)
 
     # creating conservation scores
-    scoring2 = alignment_conservation_calc(msa_02, args.percentage_disp)
+    scoring = alignment_conservation_calc(msa_01, args.percentage_disp)
     # calculating the cost and possible changes to AA seq
-    generate_cost(mutated_fasta.seq, scoring2)
+    generate_cost(mutated_fasta.seq, scoring)
 
     return 0
 

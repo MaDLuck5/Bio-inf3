@@ -16,7 +16,8 @@ if the user wants it can make a new alignment with the mutated sequence.
   
 Installation   
 Make sure python3.7 or higher is installed on the pc.  
-and ClusteloW2 is installed: source: "http://www.clustal.org/download/current/"  
+and ClustelW2 is installed: source: "http://www.clustal.org/download/current/"
+also it makes use of the Bio python package.
   
   
 Usage:  

@@ -1,0 +1,62 @@
+---
+title: "assignment 2"
+author: "Mats Slik"
+email: "m.p.slik@st.hanze.nl"
+
+output: pdf_document
+
+---
+# HMMbuild:
+
+command:= hmmbuild H2bc_hmm.mo MSA1.fasta
+
+
+# Hmmscan
+
+command:= hmmbuild H2bc_hmm.mo MSA1.fasta
+
+output created: H2bc_hmm.mo
+
+subsequently this file was used for the next step.
+
+# Hmmsearch
+
+a search was tried on the Bioinf.nl linux network bus found no connection to a refseq DB, so this was used.
+[https://www.ebi.ac.uk/Tools/hmmer/search/hmmsearch](https://www.ebi.ac.uk/Tools/hmmer/search/hmmsearch "Hmmrsearch tool")<br />
+
+![output of hmmsearch](screen_shots/Screenshot_2.jpg)<br />
+
+the Results id : 66987292-5D3C-11ED-A5D5-AC9B9F870EE0.1<br />
+[results link](https://www.ebi.ac.uk/Tools/hmmer/results/66987292-5D3C-11ED-A5D5-AC9B9F870EE0.1/score)
+
+
+this gave us multiple results I selected the top three hits :
+<br />
+1.[A0A4U1EIH7](http://www.uniprot.org/uniprot/A0A4U1EIH7_MONMO "A0A4U1EIH7")<br />
+2.[A0A553Q7J1](http://www.uniprot.org/uniprot/A0A553Q7J1_9TELE "A0A553Q7J1")<br />
+3.[A0A3N0YD81](http://www.uniprot.org/uniprot/A0A3N0YD81_ANAGA "A0A3N0YD81")<br />
+
+these files where combined with the existing homologene2.fasta multi fasta file that contained the original homologe family of proteins.
+the new combination file is called "homologene_new.fasta"
+
+a new alignment was carried out with clustal W using this fasta, the results are stored in:
+1."homologene_new1.fast"
+2."homologene_new.aln"
+
+# HMMbuild number 2 :
+
+command:= hmmbuild H2bc_hmm_new.mo homologene_new1.fasta
+
+# Pfam search
+
+interpro search ID: iprscan5-R20221105-192506-0898-30927611-p1m-1
+<br />
+[interpro Pfam search](https://www.ebi.ac.uk:443/interpro//result/InterProScan/iprscan5-R20221105-192506-0898-30927611-p1m-1/ "interpro Pfam search")
+<br />
+## screenshots PFAM
+![](screen_shots/Screenshot_3.jpg)<br />
+![](screen_shots/Screenshot_4.jpg)<br />
+![](screen_shots/Screenshot_5.jpg)<br />
+![](screen_shots/Screenshot_6.jpg)<br />
+![](screen_shots/Screenshot_7.jpg)<br />
+![](screen_shots/Screenshot_8.jpg)<br />

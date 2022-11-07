@@ -69,25 +69,28 @@ def generate_cost(mutated_aa_seq, scoring):
 
         pre_cost = cost
 
-        if aa != keys[0]:
-            if "-" not in keys:
-                cost += d[keys[0]]
-                if len(d) > 1:
-                    for key in keys:
-                        if aa not in change_dict:
-                            change_dict[aa] = [key, round(d[key] * 100, ndigits=2)]
-                        else:
-                            change_dict[aa].append(key)
-                            change_dict[aa].append(round(d[key] * 100, ndigits=2))
-                        if aa == key:
-                            cost -= d[key]
-                else:
-                    if keys[0] not in change_dict:
-                        change_dict[aa] = [keys[0], d[keys[0]] * 100]
+        if aa == "*":
+            print(f"stop found in position {counter}")
+        else:
+            if aa != keys[0]:
+                if "-" not in keys:
+                    cost += d[keys[0]]
+                    if len(d) > 1:
+                        for key in keys:
+                            if aa not in change_dict:
+                                change_dict[aa] = [key, round(d[key] * 100, ndigits=2)]
+                            else:
+                                change_dict[aa].append(key)
+                                change_dict[aa].append(round(d[key] * 100, ndigits=2))
+                            if aa == key:
+                                cost -= d[key]
                     else:
-                        change_dict[aa] += [keys[0], d[keys[0]] * 100]
-            else:
-                gaps += 1
+                        if aa not in change_dict:
+                            change_dict[aa] = [keys[0], d[keys[0]] * 100]
+                        else:
+                            change_dict[aa] += [keys[0], d[keys[0]] * 100]
+                else:
+                    gaps += 1
         position_cost.append(cost - pre_cost)
 
     print(f"length of given mutated Sequence ={len(mutated_aa_seq)}")
@@ -222,12 +225,12 @@ def command_line_parsing():
                         default=r"C:\Program Files (x86)\ClustalW2\clustalw2.exe",
                         help="The path to the installed Clustal W2 program .exe")
 
-    parser.add_argument("-p", "--percentage_disp", type=bool, default=False,
-                        help="if TRUE is given, programs shows the conservation of each amino acid in the MSA in "
+    parser.add_argument("-p", "--percentage_disp",
+                        help="if -p is given, programs shows the conservation of each amino acid in the MSA in "
                              "percentages")
 
-    parser.add_argument("-save", "--create_new_msa", type=bool, default=False,
-                        help="if True is given will creat new MSA with the mutated sequence in the out put folder")
+    parser.add_argument("-save", "--create_new_msa",
+                        help="if -Save is  is given will creat new MSA with the mutated sequence in the out put folder")
 
     args = parser.parse_args()
     return args
